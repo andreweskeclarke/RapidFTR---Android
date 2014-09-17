@@ -258,10 +258,6 @@ public class BaseModel extends JSONObject implements Parcelable {
         return childHistories;
     }
 
-    public List<BaseModel> getPotentialMatchingModels(PotentialMatchRepository potentialMatchRepo, ChildRepository childRepo, EnquiryRepository enquiryRepository) throws JSONException {
-        return new ArrayList<BaseModel>();
-    }
-
     public String getApiPath() {
         return null;
     }
@@ -270,7 +266,11 @@ public class BaseModel extends JSONObject implements Parcelable {
         return null;
     }
 
-    public List<BaseModel> getConfirmedMatchingModels(PotentialMatchRepository potentialMatchRepository, ChildRepository childRepository, EnquiryRepository enquiryRepository) {
+    public List<BaseModel> getPotentialMatchingModels() throws JSONException {
+        return new ArrayList<BaseModel>();
+    }
+
+    public List<BaseModel> getConfirmedMatchingModels() {
         return new ArrayList<BaseModel>();
     }
 

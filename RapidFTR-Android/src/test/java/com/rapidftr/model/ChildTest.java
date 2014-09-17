@@ -1,6 +1,8 @@
 package com.rapidftr.model;
 
 
+import com.google.inject.Injector;
+import com.google.inject.TypeLiteral;
 import com.rapidftr.CustomTestRunner;
 import com.rapidftr.database.Database;
 import com.rapidftr.database.DatabaseSession;
@@ -8,12 +10,14 @@ import com.rapidftr.database.ShadowSQLiteHelper;
 import com.rapidftr.repository.ChildRepository;
 import com.rapidftr.repository.EnquiryRepository;
 import com.rapidftr.repository.PotentialMatchRepository;
+import com.rapidftr.repository.Repository;
 import com.rapidftr.utils.RapidFtrDateTime;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -42,11 +46,16 @@ public class ChildTest {
     private DatabaseSession session;
 
     @Before
-    public void setUp() throws JSONException {
+    public void setUp() throws JSONException, IOException {
         user = "Foo";
+        if(session != null) {
+            session.close();
+        }
         session = new ShadowSQLiteHelper("test_database").getSession();
         potentialMatchRepository = new PotentialMatchRepository(user, session);
         enquiryRepository = new EnquiryRepository(user, session);
+        CustomTestRunner.INJECTOR.injectMembers(potentialMatchRepository);
+        CustomTestRunner.INJECTOR.injectMembers(enquiryRepository);
     }
 
     @Test
@@ -245,7 +254,7 @@ public class ChildTest {
         potentialMatchRepository.createOrUpdate(new PotentialMatch("enquiry_id_1", "child_id_1", "potential_match_id_1"));
         potentialMatchRepository.createOrUpdate(new PotentialMatch("enquiry_id_2", "child_id_2", "potential_match_id_2"));
 
-        List<BaseModel> enquiries = child.getPotentialMatchingModels(potentialMatchRepository, null, enquiryRepository);
+        List<BaseModel> enquiries = child.getPotentialMatchingModels();
 
         assertThat(enquiries.size(), is(1));
         assertEquals(enquiry.getUniqueId(), enquiries.get(0).getUniqueId());
@@ -273,7 +282,7 @@ public class ChildTest {
         potentialMatchRepository.createOrUpdate(new PotentialMatch("enquiry_id_1", "child_id_1", "potential_match_id_1"));
         potentialMatchRepository.createOrUpdate(new PotentialMatch("enquiry_id_2", "child_id_1", "potential_match_id_2", true));
 
-        List<BaseModel> enquiries = child.getPotentialMatchingModels(potentialMatchRepository, null, enquiryRepository);
+        List<BaseModel> enquiries = child.getPotentialMatchingModels();
 
         assertThat(enquiries.size(), is(1));
         assertEquals(enquiry.getUniqueId(), enquiries.get(0).getUniqueId());
@@ -301,7 +310,7 @@ public class ChildTest {
         potentialMatchRepository.createOrUpdate(new PotentialMatch("enquiry_id_1", "child_id_1", "potential_match_id_1"));
         potentialMatchRepository.createOrUpdate(new PotentialMatch("enquiry_id_2", "child_id_1", "potential_match_id_2", true));
 
-        List<BaseModel> enquiries = child.getConfirmedMatchingModels(potentialMatchRepository, null, enquiryRepository);
+        List<BaseModel> enquiries = child.getConfirmedMatchingModels();
 
         assertEquals(1, enquiries.size());
         assertEquals(enquiry.getUniqueId(), enquiries.get(0).getUniqueId());

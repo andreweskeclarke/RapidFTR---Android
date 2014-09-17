@@ -53,13 +53,9 @@ public abstract class PotentialMatchesFormSectionView extends LinearLayout imple
         if (formSection instanceof PotentialMatchesFormSection) {
             getLabel().setText(formSection.getLocalizedName());
 
-            @Cleanup PotentialMatchRepository potentialMatchRepository = RapidFtrApplication.getApplicationInstance().getBean(PotentialMatchRepository.class);
-            @Cleanup ChildRepository childRepository = RapidFtrApplication.getApplicationInstance().getBean(ChildRepository.class);
-            @Cleanup EnquiryRepository enquiryRepository = RapidFtrApplication.getApplicationInstance().getBean(EnquiryRepository.class);
-
             try {
-                List<BaseModel> confirmedMatches = model.getConfirmedMatchingModels(potentialMatchRepository, childRepository, enquiryRepository);
-                List<BaseModel> potentialMatches = model.getPotentialMatchingModels(potentialMatchRepository, childRepository, enquiryRepository);
+                List<BaseModel> confirmedMatches = model.getConfirmedMatchingModels();
+                List<BaseModel> potentialMatches = model.getPotentialMatchingModels();
                 getContainer().removeAllViews();
                 getContainer().addView(createPotentialMatchView(potentialMatches, confirmedMatches));
             } catch (JSONException e) {

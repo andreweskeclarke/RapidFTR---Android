@@ -63,7 +63,7 @@ public class EnquiryTest {
                 "\"created_by\":\"some guy\"" +
                 "}";
         Enquiry enquiry = new Enquiry(enquiryJSON);
-        List<BaseModel> children = enquiry.getPotentialMatchingModels(potentialMatchRepository, childRepository, null);
+        List<BaseModel> children = enquiry.getPotentialMatchingModels();
 
         assertEquals(2, children.size());
         assertTrue(children.contains(child1));

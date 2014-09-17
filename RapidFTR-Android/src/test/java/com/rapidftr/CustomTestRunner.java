@@ -43,6 +43,10 @@ public class CustomTestRunner extends RobolectricTestRunner {
         protected void configure() {
         }
 
+        public void addBinding(Class klass, Object boundObject) {
+            binder().bind(klass).toInstance(boundObject);
+        }
+
         @Provides
         public DatabaseHelper getDatabaseHelper() {
             return ShadowSQLiteHelper.getInstance();

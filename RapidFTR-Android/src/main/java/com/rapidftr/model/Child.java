@@ -8,9 +8,11 @@ import com.google.common.base.Predicate;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
+import com.rapidftr.RapidFtrApplication;
 import com.rapidftr.repository.ChildRepository;
 import com.rapidftr.repository.EnquiryRepository;
 import com.rapidftr.repository.PotentialMatchRepository;
+import lombok.Cleanup;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -110,20 +112,28 @@ public class Child extends BaseModel {
     }
 
     @Override
-    public List<BaseModel> getConfirmedMatchingModels(PotentialMatchRepository potentialMatchRepository, ChildRepository childRepository, EnquiryRepository enquiryRepository) {
+    public List<BaseModel> getConfirmedMatchingModels() {
+        @Cleanup PotentialMatchRepository potentialMatchRepository = RapidFtrApplication.getApplicationInstance().getBean(PotentialMatchRepository.class);
+        @Cleanup ChildRepository childRepository = RapidFtrApplication.getApplicationInstance().getBean(ChildRepository.class);
+        @Cleanup EnquiryRepository enquiryRepository = RapidFtrApplication.getApplicationInstance().getBean(EnquiryRepository.class);
+
         return getMatchesByConfirmationStatus(potentialMatchRepository, enquiryRepository, true);
     }
 
     @Override
-    public List<BaseModel> getPotentialMatchingModels(PotentialMatchRepository potentialMatchRepo, ChildRepository childRepo, EnquiryRepository enquiryRepository) throws JSONException {
-        return getMatchesByConfirmationStatus(potentialMatchRepo, enquiryRepository, false);
+    public List<BaseModel> getPotentialMatchingModels() throws JSONException {
+        @Cleanup PotentialMatchRepository potentialMatchRepository = RapidFtrApplication.getApplicationInstance().getBean(PotentialMatchRepository.class);
+        @Cleanup ChildRepository childRepository = RapidFtrApplication.getApplicationInstance().getBean(ChildRepository.class);
+        @Cleanup EnquiryRepository enquiryRepository = RapidFtrApplication.getApplicationInstance().getBean(EnquiryRepository.class);
+
+        return getMatchesByConfirmationStatus(potentialMatchRepository, enquiryRepository, false);
     }
 
     private List<BaseModel> getMatchesByConfirmationStatus(PotentialMatchRepository potentialMatchRepo, EnquiryRepository enquiryRepository, boolean status) {
         List<BaseModel> models = new ArrayList<BaseModel>();
         try {
             List<PotentialMatch> matches = potentialMatchRepo.getPotentialMatchesFor(this);
-            Collection<PotentialMatch> potentialMatches = Collections2.filter(matches, new FilterByConfirmationStatus(status));
+            Collection<PotentialMatch> potentialMatches = Collections2.filter(matches, new PotentialMatch.FilterByConfirmationStatus(status));
             models.addAll(enquiryRepository.getAllWithInternalIds(idsFromMatches(potentialMatches)));
             return models;
         } catch (JSONException exception) {
@@ -151,18 +161,5 @@ public class Child extends BaseModel {
             ids.add(potentialMatch.getEnquiryId());
         }
         return ids;
-    }
-
-    private static class FilterByConfirmationStatus implements Predicate<PotentialMatch> {
-        private Boolean keepConfirmedMatches;
-
-        public FilterByConfirmationStatus(Boolean keepConfirmedMatches){
-            this.keepConfirmedMatches = keepConfirmedMatches;
-        }
-
-        @Override
-        public boolean apply(PotentialMatch potentialMatch) {
-            return potentialMatch.isConfirmed() == keepConfirmedMatches;
-        }
     }
 }
